@@ -77,7 +77,7 @@ public class NaturalPersonTenDigitsCodeCalculatorTest {
     @Test
     public void should_use_second_name_if_person_has_multiple_names_and_first_name_is_maria() {
 
-        assertThat(tenDigitsCode("María Luisa", "Ramírez", "Sánchez", 13, 12, 1970), equalTo("RASL701213"));
+        assertThat(tenDigitsCode("María del Luisa", "Ramírez", "Sánchez", 13, 12, 1970), equalTo("RASL701213"));
     }
 
     @Test
@@ -115,6 +115,11 @@ public class NaturalPersonTenDigitsCodeCalculatorTest {
     public void should_use_ma_when_first_name_is_not_Maria() {
         // MARCO BEGINS WITH MA BUT SHOULD NOT BE DISCARDED
         assertThat(tenDigitsCode("Marco Antonio", "Cano", "Barraza", 13, 12, 1970), equalTo("CABM701213"));
+    }
+
+    @Test
+    public void should_not_fail_for_names_with_special_characters(){
+        assertThat(tenDigitsCode("Jesus Antonio","López", "Ventura", 17,8,2004),equalTo("LOVJ040817"));
     }
 
     private String tenDigitsCode(String name,

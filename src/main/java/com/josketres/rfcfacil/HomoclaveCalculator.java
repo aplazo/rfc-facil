@@ -5,13 +5,15 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.String.valueOf;
+
 /**
  * Calculates a two-digits code known as "homoclave".
  */
 class HomoclaveCalculator {
 
     private static final String HOMOCLAVE_DIGITS = "123456789ABCDEFGHIJKLMNPQRSTUVWXYZ";
-    private static final Map<String, String> FULL_NAME_MAPPING = new HashMap<String, String>();
+    private static final Map<String, String> FULL_NAME_MAPPING = new HashMap<>();
 
     static {
         FULL_NAME_MAPPING.put(" ", "00");
@@ -68,26 +70,22 @@ class HomoclaveCalculator {
     }
 
     public String calculate() {
-
         normalizeFullName();
         mapFullNameToDigitsCode();
         sumPairsOfDigits();
         buildHomoclave();
-
         return homoclave;
     }
 
     private void buildHomoclave() {
-
         int lastThreeDigits = pairsOfDigitsSum % 1000;
         int quo = lastThreeDigits / 34;
         int reminder = lastThreeDigits % 34;
         homoclave = String.valueOf(HOMOCLAVE_DIGITS.charAt(quo))
-                + String.valueOf(HOMOCLAVE_DIGITS.charAt(reminder));
+                + HOMOCLAVE_DIGITS.charAt(reminder);
     }
 
     private void sumPairsOfDigits() {
-
         pairsOfDigitsSum = 0;
         for (int i = 0; i < mappedFullName.length() - 1; i++) {
             int intNum1 = Integer.parseInt(mappedFullName.substring(i, i + 2));
@@ -97,15 +95,14 @@ class HomoclaveCalculator {
     }
 
     private void mapFullNameToDigitsCode() {
-
-        mappedFullName = "0";
+        StringBuilder mappedFullNameBuilder = new StringBuilder("0");
         for (int i = 0; i < fullName.length(); i++) {
-            mappedFullName += mapCharacterToTwoDigitCode(String.valueOf(fullName.charAt(i)));
+            mappedFullNameBuilder.append(mapCharacterToTwoDigitCode(valueOf(fullName.charAt(i))));
         }
+        mappedFullName = mappedFullNameBuilder.toString();
     }
 
     private String mapCharacterToTwoDigitCode(String c) {
-
         if (!FULL_NAME_MAPPING.containsKey(c)) {
             throw new IllegalArgumentException("No two-digit-code mapping for char: " + c);
         } else {
@@ -114,27 +111,18 @@ class HomoclaveCalculator {
     }
 
     private void normalizeFullName() {
-
         String rawFullName = person.getFullNameForHomoclave().toUpperCase();
-
-        fullName = StringUtils.stripAccents(rawFullName);
-        fullName = fullName.replaceAll("[\\-\\.',]", ""); // remove .'-,
-        fullName = addMissingCharToFullName(rawFullName, 'Ñ');
-
+        fullName = stripAccentsExcludingNTilde(rawFullName);
+        fullName = fullName.replaceAll("[^A-Z0-9&Ñ ]", "");
     }
 
-    private String addMissingCharToFullName(String rawFullName, char missingChar) {
+    private String stripAccentsExcludingNTilde(String input) {
+        if (StringUtils.isEmpty(input))
+            return input;
 
-        int index = rawFullName.indexOf(missingChar);
-        if (index == -1) {
-            return fullName;
-        }
-
-        StringBuilder newFullName = new StringBuilder(fullName);
-        while (index >= 0) {
-            newFullName.setCharAt(index, missingChar);
-            index = rawFullName.indexOf(missingChar, index + 1);
-        }
-        return newFullName.toString();
+        input = input.toUpperCase();
+        input = input.replace("Ñ", "$");
+        input = StringUtils.stripAccents(input);
+        return input.replace("$", "Ñ");
     }
 }
